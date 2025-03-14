@@ -1,61 +1,39 @@
 <?php
-require_once 'includes/auth.php';
-require_once 'includes/db.php';
+include 'includes/db.php';
+include 'includes/auth.php';
+require_login();
 
-// Redirect if not logged in
-redirectIfNotLoggedIn();
-
-// Handle "Add to Cart" action
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_to_cart'])) {
-    $food_item_id = intval($_POST['food_item_id']);
-    $user_id = $_SESSION['user_id'];
-
-    // Check if the item is already in the cart
-    $stmt = $pdo->prepare("SELECT * FROM cart WHERE user_id = ? AND food_item_id = ?");
-    $stmt->execute([$user_id, $food_item_id]);
-    $cart_item = $stmt->fetch();
-
-    if ($cart_item) {
-        // Increase quantity if the item is already in the cart
-        $stmt = $pdo->prepare("UPDATE cart SET quantity = quantity + 1 WHERE id = ?");
-        $stmt->execute([$cart_item['id']]);
-    } else {
-        // Add new item to the cart
-        $stmt = $pdo->prepare("INSERT INTO cart (user_id, food_item_id) VALUES (?, ?)");
-        $stmt->execute([$user_id, $food_item_id]);
-    }
-}
-
-// Fetch food items from the database
-$stmt = $pdo->query("SELECT * FROM food_items");
-$food_items = $stmt->fetchAll();
+$stmt = $conn->prepare("SELECT id, name, description, price FROM menu");
+$stmt->execute();
+$result = $stmt->get_result();
 ?>
-
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Menu</title>
     <link rel="stylesheet" href="css/styles.css">
+    <script>
+        function addToCart(menuId) {
+            fetch('add_to_cart.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: 'menu_id=' + menuId
+            })
+            .then(response => response.text())
+            .then(data => alert(data));
+        }
+    </script>
 </head>
 <body>
-    <div class="container">
-        <h1>Food Menu</h1>
-        <div class="menu">
-            <?php foreach ($food_items as $item): ?>
-                <div class="item">
-                    <h3><?php echo htmlspecialchars($item['name']); ?></h3>
-                    <p><?php echo htmlspecialchars($item['description']); ?></p>
-                    <p>Price: $<?php echo number_format($item['price'], 2); ?></p>
-                    <form method="POST" action="">
-                        <input type="hidden" name="food_item_id" value="<?php echo $item['id']; ?>">
-                        <button type="submit" name="add_to_cart">Add to Cart</button>
-                    </form>
-                </div>
-            <?php endforeach; ?>
+    <h1>Menu</h1>
+    <p><a href="cart.php">View Cart</a> | <a href="logout.php">Logout</a></p>
+    <?php while ($row = $result->fetch_assoc()): ?>
+        <div>
+            <h2><?php echo htmlspecialchars($row['name']); ?></h2>
+            <p><?php echo htmlspecialchars($row['description']); ?></p>
+            <p>Price: $<?php echo number_format($row['price'], 2); ?></p>
+            <button onclick="addToCart(<?php echo $row['id']; ?>)">Add to Cart</button>
         </div>
-        <a href="cart.php"><button class="cart-button">View Cart</button></a>
-    </div>
+    <?php endwhile; $stmt->close(); ?>
 </body>
 </html>

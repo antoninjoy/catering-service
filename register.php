@@ -1,60 +1,75 @@
 <?php
-require_once 'includes/db.php';
-require_once 'includes/auth.php';
+include 'includes/db.php';
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $name = trim($_POST['name']);
-    $email = trim($_POST['email']);
+if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+    $name = $_POST['name'];
+    $email = $_POST['email'];
     $password = $_POST['password'];
 
-    // Validate email format
+    // Server-side validation
     if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-        $error = "Invalid email format.";
-    }
-
-    // Validate password
-    if (strlen($password) < 8 || !preg_match('/[0-9]/', $password)) {
-        $error = "Password must be at least 8 characters long and contain numbers.";
-    }
-
-    if (!isset($error)) {
-        // Hash password
-        $hashed_password = password_hash($password, PASSWORD_BCRYPT);
-
-        try {
-            $stmt = $pdo->prepare("INSERT INTO users (name, email, password) VALUES (?, ?, ?)");
-            $stmt->execute([$name, $email, $hashed_password]);
-            header("Location: login.php");
-            exit;
-        } catch (PDOException $e) {
-            $error = "Email already exists.";
+        $error = "Invalid email format";
+    } elseif (strlen($password) < 8 || !preg_match('/[0-9]/', $password)) {
+        $error = "Password must be at least 8 characters and contain numbers";
+    } else {
+        // Check if email exists
+        $stmt = $conn->prepare("SELECT id FROM users WHERE email = ?");
+        $stmt->bind_param("s", $email);
+        $stmt->execute();
+        $stmt->store_result();
+        if ($stmt->num_rows > 0) {
+            $error = "Email already registered";
+        } else {
+            $hashed_password = password_hash($password, PASSWORD_DEFAULT);
+            $stmt = $conn->prepare("INSERT INTO users (name, email, password, role) VALUES (?, ?, ?, 'customer')");
+            $stmt->bind_param("sss", $name, $email, $hashed_password);
+            if ($stmt->execute()) {
+                header('Location: login.php');
+                exit;
+            } else {
+                $error = "Error: " . $stmt->error;
+            }
         }
+        $stmt->close();
     }
 }
 ?>
-
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Register</title>
     <link rel="stylesheet" href="css/styles.css">
+    <script>
+        function validateForm() {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            const passwordRegex = /^(?=.*[0-9]).{8,}$/;
+
+            if (!emailRegex.test(email)) {
+                alert('Please enter a valid email');
+                return false;
+            }
+            if (!passwordRegex.test(password)) {
+                alert('Password must be at least 8 characters and contain numbers');
+                return false;
+            }
+            return true;
+        }
+    </script>
 </head>
 <body>
     <h1>Register</h1>
-    <?php if (isset($error)): ?>
-        <p style="color: red;"><?php echo $error; ?></p>
-    <?php endif; ?>
-    <form method="POST" action="">
-        <label>Name:</label>
-        <input type="text" name="name" required><br>
-        <label>Email:</label>
-        <input type="email" name="email" required><br>
-        <label>Password:</label>
-        <input type="password" name="password" required><br>
+    <?php if (isset($error)) echo "<p style='color:red;'>$error</p>"; ?>
+    <form method="post" onsubmit="return validateForm()">
+        <label for="name">Name:</label><br>
+        <input type="text" id="name" name="name" required><br>
+        <label for="email">Email:</label><br>
+        <input type="email" id="email" name="email" required><br>
+        <label for="password">Password:</label><br>
+        <input type="password" id="password" name="password" required><br>
         <button type="submit">Register</button>
     </form>
-    <a href="login.php">Already have an account? Login here.</a>
+    <p>Already have an account? <a href="login.php">Login</a></p>
 </body>
 </html>
