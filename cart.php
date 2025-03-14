@@ -1,50 +1,39 @@
 <?php
-require_once 'includes/auth.php';
-require_once 'includes/db.php';
-
-// Redirect if not logged in
-redirectIfNotLoggedIn();
+include 'includes/db.php';
+include 'includes/auth.php';
+require_login();
 
 $user_id = $_SESSION['user_id'];
-
-// Fetch cart items for the logged-in user
-$stmt = $pdo->prepare("
-    SELECT c.id, f.name, f.price, c.quantity, c.added_at
-    FROM cart c
-    JOIN food_items f ON c.food_item_id = f.id
-    WHERE c.user_id = ?
-");
-$stmt->execute([$user_id]);
-$cart_items = $stmt->fetchAll();
+$stmt = $conn->prepare("SELECT c.menu_id, m.name, m.price, c.quantity FROM cart c JOIN menu m ON c.menu_id = m.id WHERE c.user_id = ?");
+$stmt->bind_param("i", $user_id);
+$stmt->execute();
+$result = $stmt->get_result();
+$total = 0;
 ?>
-
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cart</title>
     <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
-    <div class="container">
-        <h1>Your Cart</h1>
-        <?php if (count($cart_items) > 0): ?>
-            <ul>
-                <?php foreach ($cart_items as $item): ?>
-                    <li>
-                        <strong><?php echo htmlspecialchars($item['name']); ?></strong> - 
-                        $<?php echo number_format($item['price'], 2); ?> x 
-                        <?php echo $item['quantity']; ?> - 
-                        Added on <?php echo date('Y-m-d H:i', strtotime($item['added_at'])); ?>
-                    </li>
-                <?php endforeach; ?>
-            </ul>
-            <a href="place_order.php"><button class="cart-button">Place Order</button></a>
-        <?php else: ?>
-            <p>Your cart is empty.</p>
-        <?php endif; ?>
-        <a href="menu.php"><button class="cart-button">Back to Menu</button></a>
-    </div>
+    <h1>Your Cart</h1>
+    <p><a href="menu.php">Back to Menu</a> | <a href="logout.php">Logout</a></p>
+    <table border="1">
+        <tr><th>Food</th><th>Price</th><th>Quantity</th><th>Subtotal</th></tr>
+        <?php while ($row = $result->fetch_assoc()): 
+            $subtotal = $row['price'] * $row['quantity'];
+            $total += $subtotal;
+        ?>
+            <tr>
+                <td><?php echo htmlspecialchars($row['name']); ?></td>
+                <td>$<?php echo number_format($row['price'], 2); ?></td>
+                <td><?php echo $row['quantity']; ?></td>
+                <td>$<?php echo number_format($subtotal, 2); ?></td>
+            </tr>
+        <?php endwhile; $stmt->close(); ?>
+        <tr><td colspan="3">Total</td><td>$<?php echo number_format($total, 2); ?></td></tr>
+    </table>
+    <a href="place_order.php"><button>Proceed to Order</button></a>
 </body>
 </html>

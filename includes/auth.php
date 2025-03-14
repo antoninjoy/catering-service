@@ -1,33 +1,25 @@
 <?php
-// Start the session (if not already started)
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
+session_start();
+
+function is_logged_in() {
+    return isset($_SESSION['user_id']);
 }
 
-function isLoggedIn() {
-    return isset($_SESSION['user_id']) && isset($_SESSION['role']);
+function is_admin() {
+    return is_logged_in() && $_SESSION['role'] == 'admin';
 }
 
-function isAdmin() {
-    return isLoggedIn() && $_SESSION['role'] === 'admin';
-}
-
-function redirectIfNotLoggedIn() {
-    if (!isLoggedIn()) {
-        header("Location: login.php");
+function require_login() {
+    if (!is_logged_in()) {
+        header('Location: login.php');
         exit;
     }
 }
 
-function redirectBasedOnRole() {
-    if (isLoggedIn()) {
-        if (isAdmin()) {
-            header("Location: admin.php");
-            exit;
-        } else {
-            header("Location: menu.php");
-            exit;
-        }
+function require_admin() {
+    if (!is_admin()) {
+        header('Location: index.php');
+        exit;
     }
 }
 ?>

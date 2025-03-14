@@ -1,93 +1,45 @@
 <?php
-require_once 'includes/auth.php';
-require_once 'includes/db.php';
+include 'includes/db.php';
+include 'includes/auth.php';
+require_admin();
 
-// Redirect if not logged in or not an admin
-redirectIfNotLoggedIn();
-if (!isAdmin()) {
-    header("Location: index.php");
-    exit;
-}
+if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+    $name = $_POST['name'];
+    $description = $_POST['description'];
+    $price = $_POST['price'];
 
-// Handle form submission to add a new food item
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $name = trim($_POST['name']);
-    $description = trim($_POST['description']);
-    $price = floatval($_POST['price']);
-
-    // Validate inputs
-    if (empty($name) || empty($description) || $price <= 0) {
-        $error = "All fields are required, and price must be greater than 0.";
+    $stmt = $conn->prepare("INSERT INTO menu (name, description, price) VALUES (?, ?, ?)");
+    $stmt->bind_param("ssd", $name, $description, $price);
+    if ($stmt->execute()) {
+        $message = "Food added successfully";
     } else {
-        try {
-            $stmt = $pdo->prepare("INSERT INTO food_items (name, description, price) VALUES (?, ?, ?)");
-            $stmt->execute([$name, $description, $price]);
-            $success = "Food item added successfully!";
-        } catch (PDOException $e) {
-            $error = "Failed to add food item: " . $e->getMessage();
-        }
+        $error = "Error: " . $stmt->error;
     }
+    $stmt->close();
 }
 ?>
-
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Panel</title>
+    <title>Admin Dashboard</title>
     <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
-    <header>
-        <h1>Admin Panel</h1>
-        <p>Welcome, Admin!</p>
-        <a href="logout.php"><button>Logout</button></a>
-    </header>
-
-    <main>
-        <section>
-            <h2>Add New Food Item</h2>
-            <?php if (isset($error)): ?>
-                <p style="color: red;"><?php echo $error; ?></p>
-            <?php endif; ?>
-            <?php if (isset($success)): ?>
-                <p style="color: green;"><?php echo $success; ?></p>
-            <?php endif; ?>
-            <form method="POST" action="">
-                <label>Name:</label>
-                <input type="text" name="name" required><br>
-                <label>Description:</label>
-                <textarea name="description" required></textarea><br>
-                <label>Price ($):</label>
-                <input type="number" step="0.01" name="price" min="0" required><br>
-                <button type="submit">Add Food Item</button>
-            </form>
-        </section>
-
-        <section>
-            <h2>Current Menu</h2>
-            <?php
-            $stmt = $pdo->query("SELECT * FROM food_items");
-            $food_items = $stmt->fetchAll();
-            if (count($food_items) > 0): ?>
-                <ul>
-                    <?php foreach ($food_items as $item): ?>
-                        <li>
-                            <strong><?php echo htmlspecialchars($item['name']); ?></strong> - 
-                            <?php echo htmlspecialchars($item['description']); ?> - 
-                            $<?php echo number_format($item['price'], 2); ?>
-                        </li>
-                    <?php endforeach; ?>
-                </ul>
-            <?php else: ?>
-                <p>No food items available in the menu.</p>
-            <?php endif; ?>
-        </section>
-    </main>
-
-    <footer>
-        <p>&copy; 2023 Catering Service. All rights reserved.</p>
-    </footer>
+    <h1>Admin Dashboard</h1>
+    <p><a href="logout.php">Logout</a></p>
+    <?php 
+    if (isset($message)) echo "<p style='color:green;'>$message</p>";
+    if (isset($error)) echo "<p style='color:red;'>$error</p>";
+    ?>
+    <h2>Add Food Item</h2>
+    <form method="post">
+        <label for="name">Food Name:</label><br>
+        <input type="text" id="name" name="name" required><br>
+        <label for="description">Description:</label><br>
+        <textarea id="description" name="description"></textarea><br>
+        <label for="price">Price:</label><br>
+        <input type="number" id="price" name="price" step="0.01" required><br>
+        <button type="submit">Add Food</button>
+    </form>
 </body>
 </html>
