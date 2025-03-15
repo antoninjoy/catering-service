@@ -1,21 +1,18 @@
 <?php
-include 'includes/db.php';
-include 'includes/auth.php';
-require_login();
+include 'includes/db.php'; // Database connection
+include 'includes/auth.php'; // Authentication functions
+require_admin(); // Ensure only admins can access this page
 
-$user_id = $_SESSION['user_id'];
-$stmt = $conn->prepare("SELECT c.menu_id, m.name, m.price, c.quantity FROM cart c JOIN menu m ON c.menu_id = m.id WHERE c.user_id = ?");
-$stmt->bind_param("i", $user_id);
+$stmt = $conn->prepare("SELECT id, name, description, price FROM menu");
 $stmt->execute();
 $result = $stmt->get_result();
-$total = 0;
 ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cart - Catering Service</title>
+    <title>Manage Menu - Catering Service</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="css/styles.css">
 </head>
@@ -31,7 +28,7 @@ $total = 0;
                 <div class="collapse navbar-collapse" id="navbarNav">
                     <ul class="navbar-nav ms-auto">
                         <li class="nav-item"><a class="nav-link" href="index.php">Home</a></li>
-                        <li class="nav-item"><a class="nav-link" href="menu.php">Menu</a></li>
+                        <li class="nav-item"><a class="nav-link" href="admin.php">Add Menu Item</a></li>
                         <li class="nav-item"><a class="nav-link" href="logout.php">Logout</a></li>
                     </ul>
                 </div>
@@ -39,9 +36,9 @@ $total = 0;
         </nav>
     </header>
 
-    <!-- Cart Table -->
+    <!-- Menu Management Table -->
     <main class="container mt-5">
-        <h2 class="text-center">Your Cart</h2>
+        <h2 class="text-center">Manage Menu Items</h2>
         <?php if (isset($_GET['message'])): ?>
             <div class="alert alert-success"><?php echo htmlspecialchars($_GET['message']); ?></div>
         <?php elseif (isset($_GET['error'])): ?>
@@ -50,37 +47,26 @@ $total = 0;
         <table class="table table-bordered">
             <thead>
                 <tr>
-                    <th>Food</th>
+                    <th>Name</th>
+                    <th>Description</th>
                     <th>Price</th>
-                    <th>Quantity</th>
-                    <th>Subtotal</th>
-                    <th>Action</th>
+                    <th>Actions</th>
                 </tr>
             </thead>
             <tbody>
-                <?php while ($row = $result->fetch_assoc()): 
-                    $subtotal = $row['price'] * $row['quantity'];
-                    $total += $subtotal;
-                ?>
+                <?php while ($row = $result->fetch_assoc()): ?>
                     <tr>
                         <td><?php echo htmlspecialchars($row['name']); ?></td>
+                        <td><?php echo htmlspecialchars($row['description']); ?></td>
                         <td>$<?php echo number_format($row['price'], 2); ?></td>
-                        <td><?php echo $row['quantity']; ?></td>
-                        <td>$<?php echo number_format($subtotal, 2); ?></td>
                         <td>
-                            <a href="delete_from_cart.php?menu_id=<?php echo $row['menu_id']; ?>" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure?')">Delete</a>
+                            <a href="update_menu.php?id=<?php echo $row['id']; ?>" class="btn btn-warning btn-sm">Update</a>
+                            <a href="delete_menu.php?id=<?php echo $row['id']; ?>" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure?')">Delete</a>
                         </td>
                     </tr>
                 <?php endwhile; $stmt->close(); ?>
-                <tr>
-                    <td colspan="4" class="text-end"><strong>Total</strong></td>
-                    <td><strong>$<?php echo number_format($total, 2); ?></strong></td>
-                </tr>
             </tbody>
         </table>
-        <div class="text-center">
-            <a href="place_order.php" class="btn btn-primary">Proceed to Order</a>
-        </div>
     </main>
 
     <!-- Footer -->
