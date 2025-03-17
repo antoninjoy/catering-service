@@ -1,57 +1,32 @@
 body {
-    font-family: Arial, sans-serif;
-    margin: 20px;
+    font-family: 'Roboto', sans-serif;
 }
 
-h1, h2 {
-    color: #333;
+.bg-primary {
+    background-color: #FF6347 !important; /* Tomato red for a food theme */
 }
 
-form {
-    max-width: 400px;
-    margin: 20px 0;
+.btn-primary {
+    background-color: #FF6347;
+    border-color: #FF6347;
 }
 
-label {
-    display: block;
-    margin: 10px 0 5px;
+.btn-primary:hover {
+    background-color: #e04e3f;
+    border-color: #e04e3f;
 }
 
-input, textarea {
-    width: 100%;
-    padding: 8px;
-    margin-bottom: 10px;
+.btn-success {
+    background-color: #4CAF50; /* Green for "Add to Cart" */
+    border-color: #4CAF50;
 }
 
-button {
-    background-color: #4CAF50;
-    color: white;
-    padding: 10px 15px;
-    border: none;
-    cursor: pointer;
-}
-
-button:hover {
+.btn-success:hover {
     background-color: #45a049;
+    border-color: #45a049;
 }
 
-div {
-    border: 1px solid #ddd;
-    padding: 10px;
-    margin: 10px 0;
-}
-
-table {
-    width: 100%;
-    max-width: 600px;
-    border-collapse: collapse;
-}
-
-th, td {
-    padding: 10px;
-    text-align: left;
-}
-
-th {
-    background-color: #f2f2f2;
+.card-img-top {
+    height: 200px;
+    object-fit: cover;
 }

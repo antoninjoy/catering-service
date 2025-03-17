@@ -5,24 +5,20 @@ require_login();
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $menu_id = $_POST['menu_id'];
+    $quantity = isset($_POST['quantity']) ? (int)$_POST['quantity'] : 1;
     $user_id = $_SESSION['user_id'];
 
-    $stmt = $conn->prepare("SELECT quantity FROM cart WHERE user_id = ? AND menu_id = ?");
-    $stmt->bind_param("ii", $user_id, $menu_id);
-    $stmt->execute();
-    $stmt->store_result();
-    if ($stmt->num_rows > 0) {
-        $stmt = $conn->prepare("UPDATE cart SET quantity = quantity + 1 WHERE user_id = ? AND menu_id = ?");
-        $stmt->bind_param("ii", $user_id, $menu_id);
-    } else {
-        $stmt = $conn->prepare("INSERT INTO cart (user_id, menu_id, quantity) VALUES (?, ?, 1)");
-        $stmt->bind_param("ii", $user_id, $menu_id);
+    if ($quantity < 1) {
+        echo "Quantity must be at least 1";
+        exit;
     }
+
+    $stmt = $conn->prepare("INSERT INTO cart (user_id, menu_id, quantity) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE quantity = quantity + ?");
+    $stmt->bind_param("iiii", $user_id, $menu_id, $quantity, $quantity);
     if ($stmt->execute()) {
-        echo "Added to cart";
+        echo "Item added to cart!";
     } else {
         echo "Error: " . $stmt->error;
     }
-    $stmt->close();
 }
 ?>

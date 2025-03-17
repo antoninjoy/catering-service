@@ -1,39 +1,33 @@
 <?php
-include 'includes/db.php'; // Database connection
-include 'includes/auth.php'; // Authentication functions
-require_admin(); // Ensure only admin can access
+include 'includes/db.php';
+include 'includes/auth.php';
+require_admin();
 
-if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    $name = $_POST['name'];
-    $description = $_POST['description'];
-    $price = $_POST['price'];
-    $image_path = null;
+if (isset($_GET['id'])) {
+    $menu_id = $_GET['id'];
+    $stmt = $conn->prepare("SELECT name, description, price FROM menu WHERE id = ?");
+    $stmt->bind_param("i", $menu_id);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $menu_item = $result->fetch_assoc();
+    $stmt->close();
 
-    // Handle image upload
-    if (isset($_FILES['image']) && $_FILES['image']['error'] == 0) {
-        $allowed_types = ['image/jpeg', 'image/png', 'image/gif'];
-        if (in_array($_FILES['image']['type'], $allowed_types)) {
-            $upload_dir = 'uploads/';
-            $image_name = uniqid() . '_' . $_FILES['image']['name']; // Unique name to avoid overwriting
-            $image_path = $upload_dir . $image_name;
-            if (!move_uploaded_file($_FILES['image']['tmp_name'], $image_path)) {
-                $error = "Failed to upload image.";
-            }
-        } else {
-            $error = "Invalid image type. Only JPEG, PNG, and GIF are allowed.";
-        }
-    }
+    if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+        $name = $_POST['name'];
+        $description = $_POST['description'];
+        $price = $_POST['price'];
 
-    if (!isset($error)) {
-        $stmt = $conn->prepare("INSERT INTO menu (name, description, price, image) VALUES (?, ?, ?, ?)");
-        $stmt->bind_param("ssds", $name, $description, $price, $image_path);
+        $stmt = $conn->prepare("UPDATE menu SET name = ?, description = ?, price = ? WHERE id = ?");
+        $stmt->bind_param("ssdi", $name, $description, $price, $menu_id);
         if ($stmt->execute()) {
-            $message = "Food item added successfully!";
+            header('Location: admin_menu.php?message=Item updated successfully');
         } else {
             $error = "Error: " . $stmt->error;
         }
         $stmt->close();
     }
+} else {
+    header('Location: admin_menu.php');
 }
 ?>
 <!DOCTYPE html>
@@ -41,7 +35,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Dashboard - Catering Service</title>
+    <title>Update Menu Item - Catering Service</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="css/styles.css">
 </head>
@@ -65,34 +59,28 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         </nav>
     </header>
 
-    <!-- Add Food Form -->
+    <!-- Update Menu Form -->
     <main class="container mt-5">
         <div class="row justify-content-center">
             <div class="col-md-6">
-                <h2 class="text-center">Add New Food Item</h2>
-                <?php if (isset($message)): ?>
-                    <div class="alert alert-success"><?php echo $message; ?></div>
-                <?php elseif (isset($error)): ?>
+                <h2 class="text-center">Update Menu Item</h2>
+                <?php if (isset($error)): ?>
                     <div class="alert alert-danger"><?php echo $error; ?></div>
                 <?php endif; ?>
-                <form method="post" enctype="multipart/form-data">
+                <form method="post">
                     <div class="mb-3">
                         <label for="name" class="form-label">Food Name</label>
-                        <input type="text" class="form-control" id="name" name="name" required>
+                        <input type="text" class="form-control" id="name" name="name" value="<?php echo htmlspecialchars($menu_item['name']); ?>" required>
                     </div>
                     <div class="mb-3">
                         <label for="description" class="form-label">Description</label>
-                        <textarea class="form-control" id="description" name="description"></textarea>
+                        <textarea class="form-control" id="description" name="description"><?php echo htmlspecialchars($menu_item['description']); ?></textarea>
                     </div>
                     <div class="mb-3">
                         <label for="price" class="form-label">Price</label>
-                        <input type="number" class="form-control" id="price" name="price" step="0.01" required>
+                        <input type="number" class="form-control" id="price" name="price" step="0.01" value="<?php echo $menu_item['price']; ?>" required>
                     </div>
-                    <div class="mb-3">
-                        <label for="image" class="form-label">Image</label>
-                        <input type="file" class="form-control" id="image" name="image">
-                    </div>
-                    <button type="submit" class="btn btn-primary w-100">Add Food</button>
+                    <button type="submit" class="btn btn-primary w-100">Update Item</button>
                 </form>
             </div>
         </div>
