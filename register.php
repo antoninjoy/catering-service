@@ -15,8 +15,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     // Server-side validation
     if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
         $error = "Invalid email format";
-    } elseif (strlen($password) < 8 || !preg_match('/[0-9]/', $password)) {
-        $error = "Password must be at least 8 characters and contain numbers";
+    } elseif (strlen($password) < 8 || !preg_match('/[0-9]/', $password) || !preg_match('/[A-Za-z]/', $password)) {
+        $error = "Password must be at least 8 characters and contain both letters and numbers";
     } else {
         // Check if email exists
         $stmt = $conn->prepare("SELECT id FROM users WHERE email = ?");
@@ -48,6 +48,17 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     <title>Register - Catering Service</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="css/styles.css">
+    <script>
+        function validatePassword() {
+            const password = document.getElementById('password').value;
+            const regex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/;
+            if (!regex.test(password)) {
+                alert("Password must be at least 8 characters and contain both letters and numbers");
+                return false;
+            }
+            return true;
+        }
+    </script>
 </head>
 <body>
     <!-- Navigation Bar -->
@@ -82,7 +93,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                         <?php echo $error; ?>
                     </div>
                 <?php endif; ?>
-                <form method="post">
+                <form method="post" onsubmit="return validatePassword()">
                     <div class="mb-3">
                         <label for="name" class="form-label">Name</label>
                         <input type="text" class="form-control" id="name" name="name" required>
@@ -104,7 +115,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
     <!-- Footer -->
     <footer class="bg-dark text-white text-center py-3 mt-5">
-        <p>© 2023 Catering Service</p>
+        <p>© 2024 Catering Service</p>
     </footer>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>

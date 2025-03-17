@@ -1,21 +1,39 @@
 <?php
-include 'includes/db.php';
-include 'includes/auth.php';
-require_admin();
+include 'includes/db.php'; // Database connection
+include 'includes/auth.php'; // Authentication functions
+require_admin(); // Ensure only admin can access
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $name = $_POST['name'];
     $description = $_POST['description'];
     $price = $_POST['price'];
+    $image_path = null;
 
-    $stmt = $conn->prepare("INSERT INTO menu (name, description, price) VALUES (?, ?, ?)");
-    $stmt->bind_param("ssd", $name, $description, $price);
-    if ($stmt->execute()) {
-        $message = "Food added successfully";
-    } else {
-        $error = "Error: " . $stmt->error;
+    // Handle image upload
+    if (isset($_FILES['image']) && $_FILES['image']['error'] == 0) {
+        $allowed_types = ['image/jpeg', 'image/png', 'image/gif'];
+        if (in_array($_FILES['image']['type'], $allowed_types)) {
+            $upload_dir = 'uploads/';
+            $image_name = uniqid() . '_' . $_FILES['image']['name']; // Unique name to avoid overwriting
+            $image_path = $upload_dir . $image_name;
+            if (!move_uploaded_file($_FILES['image']['tmp_name'], $image_path)) {
+                $error = "Failed to upload image.";
+            }
+        } else {
+            $error = "Invalid image type. Only JPEG, PNG, and GIF are allowed.";
+        }
     }
-    $stmt->close();
+
+    if (!isset($error)) {
+        $stmt = $conn->prepare("INSERT INTO menu (name, description, price, image) VALUES (?, ?, ?, ?)");
+        $stmt->bind_param("ssds", $name, $description, $price, $image_path);
+        if ($stmt->execute()) {
+            $message = "Food item added successfully!";
+        } else {
+            $error = "Error: " . $stmt->error;
+        }
+        $stmt->close();
+    }
 }
 ?>
 <!DOCTYPE html>
@@ -57,7 +75,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 <?php elseif (isset($error)): ?>
                     <div class="alert alert-danger"><?php echo $error; ?></div>
                 <?php endif; ?>
-                <form method="post">
+                <form method="post" enctype="multipart/form-data">
                     <div class="mb-3">
                         <label for="name" class="form-label">Food Name</label>
                         <input type="text" class="form-control" id="name" name="name" required>
@@ -70,6 +88,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                         <label for="price" class="form-label">Price</label>
                         <input type="number" class="form-control" id="price" name="price" step="0.01" required>
                     </div>
+                    <div class="mb-3">
+                        <label for="image" class="form-label">Image</label>
+                        <input type="file" class="form-control" id="image" name="image">
+                    </div>
                     <button type="submit" class="btn btn-primary w-100">Add Food</button>
                 </form>
             </div>
@@ -78,7 +100,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
     <!-- Footer -->
     <footer class="bg-dark text-white text-center py-3 mt-5">
-        <p>© 2023 Catering Service</p>
+        <p>© 2024 Catering Service</p>
     </footer>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>

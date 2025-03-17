@@ -58,7 +58,7 @@ $result = $stmt->get_result();
                     <tr>
                         <td><?php echo htmlspecialchars($row['name']); ?></td>
                         <td><?php echo htmlspecialchars($row['description']); ?></td>
-                        <td>$<?php echo number_format($row['price'], 2); ?></td>
+                        <td>&#8377;<?php echo number_format($row['price'], 2); ?></td>
                         <td>
                             <a href="update_menu.php?id=<?php echo $row['id']; ?>" class="btn btn-warning btn-sm">Update</a>
                             <a href="delete_menu.php?id=<?php echo $row['id']; ?>" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure?')">Delete</a>
@@ -71,7 +71,7 @@ $result = $stmt->get_result();
 
     <!-- Footer -->
     <footer class="bg-dark text-white text-center py-3 mt-5">
-        <p>© 2023 Catering Service</p>
+        <p>© 2024 Catering Service</p>
     </footer>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
