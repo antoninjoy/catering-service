@@ -3,17 +3,17 @@ body {
 }
 
 .bg-primary {
-    background-color: #FF6347 !important; /* Tomato red for a food theme */
+    background-color: #F98866 !important; /* Tomato red for a food theme */
 }
 
 .btn-primary {
-    background-color: #FF6347;
-    border-color: #FF6347;
+    background-color: #F98866;
+    border-color: #F98866;
 }
 
 .btn-primary:hover {
-    background-color: #e04e3f;
-    border-color: #e04e3f;
+    background-color: #a4706a;
+    border-color: #a96b64;
 }
 
 .btn-success {

@@ -55,11 +55,14 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     <span class="navbar-toggler-icon"></span>
                 </button>
                 <div class="collapse navbar-collapse" id="navbarNav">
-                    <ul class="navbar-nav ms-auto">
-                        <li class="nav-item"><a class="nav-link" href="index.php">Home</a></li>
-                        <li class="nav-item"><a class="nav-link" href="admin_menu.php">Manage Menu</a></li>
-                        <li class="nav-item"><a class="nav-link" href="logout.php">Logout</a></li>
-                    </ul>
+                <ul class="navbar-nav ms-auto">
+                <li class="nav-item"><a class="nav-link" href="index.php">Home</a></li>
+                <li class="nav-item"><a class="nav-link" href="admin.php">Add Menu Item</a></li>
+                <li class="nav-item"><a class="nav-link" href="admin_menu.php">Manage Menu</a></li>
+                <li class="nav-item"><a class="nav-link" href="manage_orders.php">Manage Orders</a></li>
+                <li class="nav-item"><a class="nav-link" href="manage_users.php">Manage Users</a></li>
+                <li class="nav-item"><a class="nav-link" href="logout.php">Logout</a></li>
+                </ul>
                 </div>
             </div>
         </nav>
