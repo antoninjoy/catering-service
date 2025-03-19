@@ -30,3 +30,11 @@ body {
     height: 200px;
     object-fit: cover;
 }
+.hero-section {
+    background-image: url('/images/bg.jpg'); /* Path to your image */
+    background-size: cover; /* Makes the image cover the entire section */
+    background-position: center; /* Centers the image */
+    background-repeat: no-repeat; /* Prevents the image from repeating */
+    color: white; /* Makes text white for better contrast */
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7); /* Adds a shadow to text for readability */
+}
