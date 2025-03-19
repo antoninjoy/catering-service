@@ -150,7 +150,7 @@ CREATE TABLE `users` (
 
 LOCK TABLES `users` WRITE;
 /*!40000 ALTER TABLE `users` DISABLE KEYS */;
-INSERT INTO `users` VALUES (1,'admin','admin@example.com','$2y$10$XPOr7/hDHPvz2.VTQZyZd.UKRTdudJ8O0meRp.y.9rudU4mOyZSRS','admin'),(2,'sherin','him@gmail.com','$2y$10$AcB3D3/KLeEDBiT02DFFkuXD7KHkwNr75j8Ie.fTyl/9SOCH4M4q6','customer'),(4,'antonin','rob@gmail.com','$2y$10$HOySRwh59y2ie4rcCNWXreGRqLd7EnKWr.oxaqcPzRlJ.rVb0g3f2','customer'),(5,'sherin','nevin@gmail.com','$2y$10$51xp1KauMJFlDRpYN5OnV.bYuTb275JEcBcdJ75uixtyF9Dt7PcOS','customer'),(6,'sherin','sherin@gmail.com','$2y$10$o055/ey2p1T5GisLC1jnf./iZFnapxGZBy.L2FznNRpOyGKPJqZOS','customer'),(7,'jenu','jenu@gmail.com','$2y$10$x.pd1acPHVpZalRWAQhLt.skQs.cb56OjlHF/9mUXDeA2XzIsenne','customer'),(8,'aswin','aswin@gmail.com','$2y$10$9AZ0GViKFTNjBiEDjRwhl.SIPY3BYSyRb5iz9VmCPYN8EzR7Qfbsm','customer'),(9,'anto','anto@gmail.com','$2y$10$4NjWQbVD16NcHauBJ9JbgucahF6U5qsG9ZIGmTwBd5z7df3iaS9z6','customer'),(10,'sam','sam@gmail.com','$2y$10$ca80NaQfouUlRoN9wZPogOg3pkmUT7liHHXAOt5/igPzZAyT2ozri','customer');
+
 /*!40000 ALTER TABLE `users` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
